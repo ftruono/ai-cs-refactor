@@ -14,10 +14,10 @@ import time
 # Parameters
 # =============================================================================
 
-SUBSET = "large"  # "small" | "medium" | "large" - usato solo per nominare i file di cache
-INPUT_CSV = "../resources/large_intro_removing_output_results.csv"
-OUTPUT_CSV = "large_pyref_results_x2_full.csv"
-COPY_BACKUP_PYREF = "backup/large"
+SUBSET = "small"  # "small" | "medium" | "large" - usato solo per nominare i file di cache
+INPUT_CSV = "../resources/small_intro_removing_output_results.csv"
+OUTPUT_CSV = "small_pyref_results_full.csv"
+COPY_BACKUP_PYREF = "backup/small"
 # cartelle dove cercare i JSON di PyRef gia' prodotti (nome file: <repo>-<commit>_copy_<timestamp>.json)
 BACKUP_READ_DIRS = ["backup/large", "backup/medium", "backup/small"]
 
@@ -26,7 +26,7 @@ REPOS_DIR = None                   # None = <PYREF_DIR>/Repos
 CACHE_DIR = "pyref_cache"          # cartella per i file di cache/resume
 
 CLONE_TIMEOUT = 3600                 # secondi max per il clone completo di un repo
-COMMIT_TIMEOUT = 90                # secondi max per l'estrazione refactoring su un commit
+COMMIT_TIMEOUT = 180                # secondi max per l'estrazione refactoring su un commit
 
 RETRY_ERRORS = False                # True = ritenta i commit finiti in error/timeout
 
