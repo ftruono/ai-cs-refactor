@@ -1,0 +1,9 @@
+\begin{titlepage}
+\begin{abstract}
+%
+I code smell specifici del codice di machine learning possono degradare la qualità dei progetti, ma si sa poco su quanto la loro introduzione e la loro rimozione siano legate ad attività di refactoring. Questa tesi studia l'associazione tra smell e refactoring su 6350 occorrenze di smell tratte dal dataset NICHE e suddivise per dimensione del commit (small, medium, large). Per ciascuna occorrenza sono stati analizzati con PyRef il commit di introduzione e il commit di rimozione. Un refactoring è considerato valido se PyRef lo individua nello stesso file e nella stessa funzione dello smell; nel commit di rimozione, per deduzione, questo indica che il refactoring ha rimosso lo smell.
+Soltanto una parte limitata delle occorrenze analizzabili ha un refactoring considerato valido ai fini dello studio e sommariamente, senza una divisione per dataset, possiamo affermare che è presente un  refactoring valido nel 11\%–18\% dei commit di rimozione e nell’9\%–12\% di quelli di introduzione. L’analisi della correlazione di Spearman tra la presenza di un refactoring valido e il numero di smell presenti nel commit, calcolata separatamente per introduzione e rimozione su tutti e tre i subset, mostra un’associazione negativa debole-moderata, con ρ compreso tra −0,10 e −0,23 per l’introduzione e tra −0,11 e −0,33 per la rimozione. L’associazione è più marcata per la rimozione, dove risulta statisticamente significativa nei subset large (ρ = −0,25) e medium (ρ = −0,33), mentre nel subset small non lo è (ρ = −0,11, p = 0,20). Questo indica che i refactoring sono associati, seppur in maniera relativa, all’introduzione e/o alla rimozione di smell, come mostrato dai valori di ρ e dai p-value sopra riportati
+%
+\\[1cm]
+\end{abstract}
+\end{titlepage}
