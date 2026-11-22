@@ -13,11 +13,73 @@ Per capire in quali attività gli smell vengono introdotti e rimossi, lo studio 
 Questa classificazione ha però un limite, da cui nasce la presente tesi. L'etichetta «refactoring» dipende soltanto da ciò che lo sviluppatore ha scritto nel messaggio di commit: non verifica che nel codice sia avvenuta davvero un'operazione di refactoring, né che questa abbia toccato il punto in cui si trova lo smell. Un commit descritto come \textit{refactoring} può non contenere alcuna ristrutturazione riconoscibile; al contrario, un commit che rinomina o estrae un metodo può avere un messaggio che non lo dice. Gli stessi autori di CodeSmile osservano che alcune rimozioni sono probabilmente incidentali, cioè conseguenza di modifiche strutturali come la ridenominazione di un file, e che lo spostamento di uno smell viene registrato come una rimozione seguita da una nuova introduzione.
 La domanda che resta aperta è quindi la seguente: \textit{quando uno smell di machine learning compare o scompare, nel codice di quel commit è avvenuto davvero un refactoring e riguarda proprio la funzione che contiene lo smell?} Per rispondere servono uno strumento che rilevi i refactoring dalle modifiche al codice e un criterio che colleghi ciascun refactoring alla posizione dello smell. In questa tesi lo strumento è PyRef \cite{pyref}, che riconosce i refactoring a livello di metodo nei progetti Python ed il criterio è la coincidenza di \textbf{file e funzione} tra il refactoring e lo smell.
 
-/section{Obiettivo e domande di ricerca}
+\section{Obiettivo e domande di ricerca}
 
+L'obiettivo dello studio è formulato secondo lo schema Goal-Question-Metric~\cite{basili1994}, lo stesso usato dal lavoro di riferimento.
 
-/section{Requisiti dello studio}
+\goal{Analizzare i commit che introducono e che rimuovono ML-specific code smell, allo scopo di valutare quanto spesso contengano un refactoring verificato nel codice e localizzato nella stessa funzione dello smell e se la presenza di tale refactoring sia associata al numero di smell introdotti o rimossi, dal punto di vista di chi studia e mantiene sistemi ML-enabled, all'interno del contesto di progetti open source del dataset NICHE}
 
-/section{Contributi}
+Da questo obiettivo discendono tre domande di ricerca:
 
-/section{Struttura della tesi}
+\rqbox{1}{Con quale frequenza il commit che introduce uno smell contiene un refactoring rilevato nello stesso file e nella stessa funzione dello smell? Per quali tipologie di smell e di refactoring?}
+
+\rqbox{2}{Con quale frequenza il commit che rimuove uno smell contiene un refactoring rilevato nello stesso file e nella stessa funzione dello smell? Per quali tipologie? In questi casi, il refactoring ha davvero eliminato lo smell?}
+
+\rqbox{3}{Esiste un'associazione statistica tra la presenza di un refactoring nella stessa funzione dello smell e il numero di smell introdotti o rimossi dal commit?}
+
+Nel seguito un refactoring che soddisfa entrambe le condizioni di localizzazione — stesso file e stessa funzione dello smell — è chiamato \textbf{refactoring valido}. Per il commit di rimozione il progetto di ricerca parte da una \textit{deduzione}: se il dataset afferma che un certo commit rimuove un certo smell da una certa funzione, e PyRef rileva in quel commit un refactoring proprio su quella funzione, allora è ragionevole attribuire la rimozione al refactoring. La seconda parte di RQ2 sottopone questa deduzione a verifica.
+
+\section{Requisiti dello studio}
+
+Il disegno dello studio e la pipeline che lo realizza rispondono a cinque requisiti, riassunti nella Tabella~\ref{table:req}. I primi due derivano direttamente dal limite descritto sopra; gli altri tre garantiscono che i risultati siano completi, verificabili e confrontabili con quelli del lavoro di riferimento.
+
+\begin{table}
+    \centering
+    \caption{Requisiti dello studio e punti della tesi in cui vengono soddisfatti.}
+    \vspace{1mm} % Adjust the height of the space between caption and tabular
+    
+    \rowcolors{1}{graytable}{white}
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{p{0.18\linewidth} p{0.52\linewidth} p{0.3\linewidth}} % da rivedere n'attimo
+        \toprule
+        \rowcolor{black}
+        \textbf{\textcolor{white}{Requisito}} & \textbf{\textcolor{white}{Descrizione}} & \textbf{\textcolor{white}{Dove viene soddisfatto}}\\
+        \bottomrule
+        R1 — Verifica sul codice & Il refactoring deve essere rilevato analizzando le modifiche al codice introdotte dal commit, non il testo del messaggio di commit & Uso di PyRef (Sezione~\ref{sec:tools})\\
+        R2 — Localizzazione & Ogni refactoring rilevato deve poter essere messo in relazione con il punto in cui si trova lo smell: stesso file e stessa funzione & Criterio di refactoring valido (capitolo futuro) \\
+        R3 — Copertura delle due fasi & L’analisi deve riguardare, con gli stessi criteri, sia il commit che introduce lo smell sia quello che lo rimuove & Colonne separate per introduzione e rimozione \\
+        R4 — Tracciabilità e riproducibilità & L’esecuzione deve essere riprendibile, conservare l’output grezzo dello strumento e distinguere i casi non analizzabili da quelli senza refactoring & codice della pipeline (capitolo futuro)\\
+        R5 — Stratificazione & I risultati devono essere disponibili separatamente per dimensione del progetto, tipologia di smell e tipologia di refactoring & Capitolo futuro \\
+        \bottomrule
+    \end{tabular}
+    }
+    
+    \label{table:req}
+\end{table}
+
+\paragraph{R1 — Verifica sul codice} La presenza di un refactoring deve essere stabilita dalle modifiche che il commit apporta al codice, non dal testo che lo descrive. È il requisito che distingue questo studio dalla classificazione per parole chiave
+
+\paragraph{R2 — Localizzazione} Sapere che un commit contiene un refactoring non basta: un commit può modificare decine di file e un refactoring in un punto lontano dallo smell non dice nulla sulla sua introduzione o rimozione. Ogni refactoring deve quindi poter essere confrontato con il file e con la funzione dello smell
+
+\paragraph{R3 — Copertura delle due fasi} Lo smell può essere stato introdotto da un refactoring, oltre che rimosso da un refactoring. Il commit di introduzione e quello di rimozione vanno perciò analizzati entrambi, con lo stesso strumento e con gli stessi criteri
+
+\paragraph{R4 — Tracciabilità e riproducibilità} L'analisi di migliaia di commit su centinaia di repository richiede ore di calcolo e può interrompersi, la pipeline deve poter riprendere dal punto in cui si è fermata, conservare l'output originale dello strumento, soprattutto, distinguere un commit in cui non c'è alcun refactoring da un commit che non è stato possibile analizzare
+
+\paragraph{R5 — Stratificazione} I risultati devono poter essere letti per dimensione del progetto (small, medium, large), per tipologia di smell e per tipologia di refactoring,perché uno schema osservato su un sottoinsieme non vale necessariamente sugli altri
+
+\section{Contributi}
+
+La tesi fornisce quattro contributi.
+
+\begin{enumerate}
+    \item Una \textbf{pipeline riproducibile} che esegue PyRef sul commit di introduzione e sul commit di rimozione di 6350 occorrenze di smell (coppie introduzione–rimozione) tratte dal replication package di CodeSmile e che per ogni occorrenza registra i refactoring rilevati, l'esito dell'analisi e la relazione di posizione con lo smell
+    \item Un'\textbf{analisi quantitativa} della presenza di refactoring nelle due fasi, per dimensione del progetto, tipologia di smell e tipologia di refactoring.
+    \item Una \textbf{validazione} del significato del refactoring valido, condotta classificando automaticamente ciò che il \texttt{git diff} mostra per la riga dello smell, leggendo i diff di \textbf{x - TODO ci sto ancora lavorando}  casi e cercando sull'intero dataset gli eventi speculari, cioè le reintroduzioni dello stesso smell nello stesso commit e nello stesso file.
+    \item Un'\textbf{analisi statistica} dell'associazione tra refactoring valido e numero di smell, basata sulla correlazione di Spearman e accompagnata da misure complementari e da verifiche di robustezza %TODO valutazione delle misure complementari
+\end{enumerate}
+
+\section{Struttura della tesi}
+
+Il capitolo 2 presenta i concetti e i lavori su cui la tesi si fonda. Il capitolo 3 descrive i dati di partenza: il dataset NICHE, i file del replication package e i campi utilizzati 
+
+%TODO idea struttura da capire: Il capitolo 4 illustra la pipeline, le scelte di progetto e il significato dei dati che produce. I capitoli 5 e 6 riportano lo studio sui commit di introduzione e di rimozione. Il capitolo 7 è dedicato all'analisi statistica. Il capitolo 8 riassume i risultati, discute le minacce alla validità e indica gli sviluppi futuri.
